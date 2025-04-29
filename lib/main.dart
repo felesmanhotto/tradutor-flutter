@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(MyApp());
@@ -10,8 +12,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'App Tradutor',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      title: 'Translator App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.blue.shade50,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue, // cor do botao
+            foregroundColor: Colors.white, // cor do texto
+            textStyle: const TextStyle(fontSize: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
       home: TradutorHome(),
     );
   }
@@ -25,145 +41,242 @@ class TradutorHome extends StatefulWidget {
 }
 
 class _TradutorHomeState extends State<TradutorHome> {
-  final TextEditingController _controller = TextEditingController();
-  String _textoTraduzido = '';
+  final TextEditingController _inputController = TextEditingController();
+  final TextEditingController _outputController = TextEditingController();
 
-  final idiomas = ['Português', 'Inglês', 'Espanhol', 'Francês'];
+  final idiomas = [
+    'Portuguese',
+    'English',
+    'Spanish',
+    'French',
+    'Italian',
+    'German',
+  ];
 
-  String idiomaEntrada = 'Português';
-  String idiomaSaida = 'Espanhol';
+  String idiomaEntrada = 'Portuguese';
+  String idiomaSaida = 'English';
+  bool _isLoading = false;
 
-  void _traduzirTexto() {
+  Future<void> _traduzirTexto() async {
+    final texto = _inputController.text;
+    final sourceLang = _converterIdiomaParaCodigo(idiomaEntrada);
+    final targetLang = _converterIdiomaParaCodigo(idiomaSaida);
+
     setState(() {
-      _textoTraduzido = _controller.text.split('').reversed.join('');
+      _isLoading = true;
     });
+
+    final url = Uri.parse(
+      'https://api.mymemory.translated.net/get?q=$texto&langpair=$sourceLang|$targetLang',
+    );
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final jsonBody = json.decode(response.body);
+        final translatedText = jsonBody['responseData']['translatedText'];
+        setState(() {
+          _outputController.text = translatedText;
+        });
+      } else {
+        _mostrarErro('Translation failed. Please try again later.');
+        setState(() {
+          _outputController.text = '';
+        });
+      }
+    } catch (e) {
+      print('Erro na tradução: $e');
+      _mostrarErro(
+        'Connection error. Please check your internet and try again.',
+      );
+      setState(() {
+        _outputController.text = '';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _converterIdiomaParaCodigo(String idioma) {
+    switch (idioma) {
+      case 'Portuguese':
+        return 'pt';
+      case 'English':
+        return 'en';
+      case 'Spanish':
+        return 'es';
+      case 'French':
+        return 'fr';
+      case 'Italian':
+        return 'it';
+      case 'German':
+        return 'de';
+      default:
+        return 'en';
+    }
+  }
+
+  void _mostrarErro(String mensagem) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(mensagem),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Traduzir'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Translator'),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
+        elevation: 4, // sombra
+      ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
 
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButton<String>(
-                    value: idiomaEntrada,
-                    onChanged: (novoValor) {
-                      setState(() {
-                        idiomaEntrada = novoValor!;
-                      });
-                    },
-                    items:
-                        idiomas.map((idioma) {
-                          return DropdownMenuItem<String>(
-                            value: idioma,
-                            child: Text(idioma),
-                          );
-                        }).toList(),
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButton<String>(
+                      value: idiomaEntrada,
+                      onChanged: (novoValor) {
+                        setState(() {
+                          idiomaEntrada = novoValor!;
+                        });
+                      },
+                      items:
+                          idiomas.map((idioma) {
+                            return DropdownMenuItem<String>(
+                              value: idioma,
+                              child: Text(idioma),
+                            );
+                          }).toList(),
+                    ),
                   ),
-                ),
 
-                const SizedBox(width: 16),
-                const Icon(Icons.arrow_forward),
-                const SizedBox(width: 16),
+                  const SizedBox(width: 16),
+                  const Icon(Icons.arrow_forward),
+                  const SizedBox(width: 16),
 
-                Expanded(
-                  child: DropdownButton<String>(
-                    value: idiomaSaida,
-                    onChanged: (novoValor) {
-                      setState(() {
-                        idiomaSaida = novoValor!;
-                      });
-                    },
-                    items:
-                        idiomas.map((idioma) {
-                          return DropdownMenuItem<String>(
-                            value: idioma,
-                            child: Text(idioma),
-                          );
-                        }).toList(),
+                  Expanded(
+                    child: DropdownButton<String>(
+                      value: idiomaSaida,
+                      onChanged: (novoValor) {
+                        setState(() {
+                          idiomaSaida = novoValor!;
+                        });
+                      },
+                      items:
+                          idiomas.map((idioma) {
+                            return DropdownMenuItem<String>(
+                              value: idioma,
+                              child: Text(idioma),
+                            );
+                          }).toList(),
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Input
-                Expanded(
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 200, // Altura fixa
-                        child: TextField(
-                          controller: _controller,
-                          maxLines: null,
-                          expands: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Texto original',
-                            border: OutlineInputBorder(),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 200, // altura fixa
+                          child: TextField(
+                            controller: _inputController,
+                            maxLines: null,
+                            expands: true,
+                            decoration: InputDecoration(
+                              labelText: 'Original Text',
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Image.asset(
-                        'assets/placeholder.png',
-                        height: 40,
-                      ), // bandeira de entrada
-                    ],
+                        const SizedBox(height: 16),
+                        Image.asset(
+                          'assets/$idiomaEntrada.png',
+                          height: 40,
+                        ), // bandeira de entrada
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(width: 16),
+                  const SizedBox(width: 16),
 
-                // Output
-                Expanded(
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: 200,
-                        child: TextField(
-                          controller: TextEditingController(
-                            text: _textoTraduzido,
-                          ),
-                          readOnly: true,
-                          maxLines: null,
-                          expands: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Texto traduzido',
-                            border: OutlineInputBorder(),
+                  // Output
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 200,
+                          child: TextField(
+                            controller: _outputController,
+                            readOnly: true,
+                            maxLines: null,
+                            expands: true,
+                            decoration: InputDecoration(
+                              labelText: 'Translated Text',
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Image.asset(
-                        'assets/placeholder.png',
-                        height: 40,
-                      ), // bandeira de saída
-                    ],
+                        const SizedBox(height: 16),
+                        Image.asset(
+                          'assets/$idiomaSaida.png',
+                          height: 40,
+                        ), // bandeira de saída
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            ElevatedButton(
-              onPressed: _traduzirTexto,
-              child: const Text('Traduzir'),
-            ),
-          ],
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                    onPressed: _traduzirTexto,
+                    child: const Text('Translate'),
+                  ),
+            ],
+          ),
         ),
       ),
     );
