@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(MyApp());
@@ -137,14 +138,34 @@ class _TradutorHomeState extends State<TradutorHome> {
     );
   }
 
+  void _copiarTexto() {
+    final texto = _outputController.text;
+
+    if (texto.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: texto));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Translation copied!')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Translator'),
+        title: const Text(
+          'Translator',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Roboto',
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         elevation: 4, // sombra
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
 
       body: SingleChildScrollView(
@@ -201,70 +222,86 @@ class _TradutorHomeState extends State<TradutorHome> {
 
               const SizedBox(height: 16),
 
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Input
-                  Expanded(
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 200, // altura fixa
-                          child: TextField(
-                            controller: _inputController,
-                            maxLines: null,
-                            expands: true,
-                            decoration: InputDecoration(
-                              labelText: 'Original Text',
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.3,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _inputController,
+                              maxLines: null,
+                              expands: true,
+                              decoration: InputDecoration(
+                                labelText: 'Original Text',
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Image.asset(
-                          'assets/$idiomaEntrada.png',
-                          height: 40,
-                        ), // bandeira de entrada
-                      ],
+                          const SizedBox(height: 8),
+                          Image.asset('assets/$idiomaEntrada.png', height: 40),
+                        ],
+                      ),
                     ),
-                  ),
-
-                  const SizedBox(width: 16),
-
-                  // Output
-                  Expanded(
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 200,
-                          child: TextField(
-                            controller: _outputController,
-                            readOnly: true,
-                            maxLines: null,
-                            expands: true,
-                            decoration: InputDecoration(
-                              labelText: 'Translated Text',
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.3,
+                              child: Stack(
+                                children: [
+                                  TextField(
+                                    controller: _outputController,
+                                    readOnly: true,
+                                    maxLines: null,
+                                    expands: true,
+                                    decoration: InputDecoration(
+                                      labelText: 'Translated Text',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      contentPadding: const EdgeInsets.fromLTRB(
+                                        12,
+                                        12,
+                                        40,
+                                        12,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: GestureDetector(
+                                      onTap: _copiarTexto,
+                                      child: const Icon(
+                                        Icons.copy,
+                                        size: 20,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Image.asset(
-                          'assets/$idiomaSaida.png',
-                          height: 40,
-                        ), // bandeira de saída
-                      ],
+                          const SizedBox(height: 8),
+                          Image.asset('assets/$idiomaSaida.png', height: 40),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               const SizedBox(height: 16),
