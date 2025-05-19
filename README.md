@@ -45,6 +45,6 @@ pubspec.yaml             # Dependencies and assets config
 3. Run this in the project folder:
 
 ```bash
-flutter devices       # Check if your device is detected
-flutter run           # Launch the app on your phone
+flutter devices               # Check if your device is detected and shows it's ID
+flutter run -d <device_id>    # Launch the app on your phone
 
