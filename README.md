@@ -1,16 +1,50 @@
-# tradutor_app
+# Translator App – Built with Flutter
 
-A new Flutter project.
+This is a simple mobile translator app built using Flutter.  
+It allows users to translate text between multiple languages with a clean and responsive interface.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Translate between:
+  - Portuguese 🇧🇷
+  - English 🇺🇸
+  - Spanish 🇪🇸
+  - French 🇫🇷
+  - Italian 🇮🇹
+  - German 🇩🇪
+- Language selection with flags
+- Live text translation via [MyMemory API](https://mymemory.translated.net/)
+- Copy translated text with one tap
+- Error handling with alerts
+- Loading indicator while translating
 
-A few resources to get you started if this is your first Flutter project:
+## Requirements
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Flutter SDK (3.10 or higher recommended)
+- Android SDK or a physical Android devide
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Project Structure
+
+lib/
+  main.dart              # Main app code
+assets/
+  English.png
+  Portuguese.png
+  ...
+pubspec.yaml             # Dependencies and assets config
+
+
+## How to Run on a Real Android Device
+
+1. Enable **Developer Options** on your Android phone
+   - Settings > About phone > Tap "Build number" several times
+   - Enable **USB Debugging**
+
+2. Connect your phone via USB
+
+3. Run this in the project folder:
+
+```bash
+flutter devices       # Check if your device is detected
+flutter run           # Launch the app on your phone
+
