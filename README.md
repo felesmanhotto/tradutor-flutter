@@ -25,13 +25,12 @@ It allows users to translate text between multiple languages with a clean and re
 
 ## Project Structure
 
-lib/
-  main.dart              # Main app code
-assets/
-  English.png
-  Portuguese.png
-  ...
-pubspec.yaml             # Dependencies and assets config
+- `lib/`
+  - `main.dart` — Main app code
+- `assets/`
+  - `English.png`, `Portuguese.png`, ...
+- `pubspec.yaml` — Dependencies and asset configuration
+
 
 
 ## How to Run on a Real Android Device
